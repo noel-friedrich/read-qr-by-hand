@@ -84,6 +84,7 @@
 
             <div class="page a4" id="worksheet-container">
                 <h2>Worksheet for reading QR <output id="version-name-output"></output></h2>
+                <button id="print-button" class="using-invisible-ink">Print</button>
 
                 <div class="fill-canvas-layout">
                     <canvas id="qr-fill-canvas">
@@ -121,8 +122,7 @@
                 </div>
 
                 <div id="byte-tables"></div>
-                <br>
-                <h3 class="no-margin">&gt; Step 3.</h3>
+                <h3 class="no-margin" style="margin-top: 1em">&gt; Step 3.</h3>
                 <p class="no-margin">
                     Now, decode the data.
                     <span data-show-if="more-than-1-block">Read the data block-by-block, essentially concatenating the blocks.</span>

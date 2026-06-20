@@ -7,8 +7,11 @@ const elements = {
     fillCanvas: document.getElementById("qr-fill-canvas"),
     byteTablesContainer: document.getElementById("byte-tables"),
     freeWorkspace: document.getElementById("free-workspace"),
-    worksheetContainer: document.getElementById("worksheet-container")
+    worksheetContainer: document.getElementById("worksheet-container"),
+    printButton: document.getElementById("print-button")
 }
+
+const PRINT_SCALE = 2
 
 const fillContext = elements.fillCanvas.getContext("2d")
 const url = new URL(window.location)
@@ -236,11 +239,14 @@ class QrCode {
         drawGridLines=true,
         drawReadPath=false,
         highlightedBlockIndex=null,
-        maxReadPathLength=null
+        maxReadPathLength=null,
+        printMode=false
     }={}) {
+        const scalingFactor = printMode ? PRINT_SCALE : 1.0
+
         context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-        context.canvas.width = context.canvas.clientWidth
-        context.canvas.height = context.canvas.clientHeight
+        context.canvas.width = context.canvas.clientWidth * scalingFactor
+        context.canvas.height = context.canvas.clientHeight * scalingFactor
 
         const cellWidth = context.canvas.width / this.size.x
         const cellHeight = context.canvas.height / this.size.y
@@ -702,7 +708,7 @@ function resetFreeWorkspace() {
 }
 
 let fillQr = null
-function redrawFillCanvas() {
+function redrawFillCanvas(printMode=false) {
     const [numBlocks, totalBlocksLength] = VersionECCBlockLayoutTable[qrParameters.version][qrParameters.eccLevel]
     const totalFblocksLength = totalBlocksLength * 2
 
@@ -710,7 +716,8 @@ function redrawFillCanvas() {
         drawText: false,
         drawReadPath: true,
         maxReadPathLength: totalFblocksLength * 4,
-        highlightedBlockIndex: highlightedDatablockIndex
+        highlightedBlockIndex: highlightedDatablockIndex,
+        printMode
     })
 }
 
@@ -755,12 +762,21 @@ function initVersionSelect() {
     updateVersionValue()
 }
 
+function initPrintButton() {
+    elements.printButton.addEventListener("click", () => {
+        redrawFillCanvas(true)
+        window.print()
+        redrawFillCanvas()
+    })
+}
+
 function main() {
     qrParameters = loadQRParameters()
     updateQrParameters()
     initChoiceCanvas()
     initVersionSelect()
     resetFillCanvas()
+    initPrintButton()
 
     window.addEventListener("resize", redrawFillCanvas)
     window.addEventListener("resize", resetFreeWorkspace)
