@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Read a QR by hand</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <main class="main-container">
+            <div class="page a4">
+                <h1>How to read a QR Code by Hand</h1>
+                <p>
+                    <a href="https://en.wikipedia.org/wiki/QR_code">Quick Response Codes</a>
+                    weren't made to be human-readable. However, you can still read them by hand;
+                    it just takes a bit of time and memorization. It's not a particularly exciting
+                    nor very quick-response, but it is <b>fun and relaxing</b>.
+                </p>
+
+                <p>
+                    In this tutorial, you will learn to read code versions V1-V5 in byte-encoding mode
+                    with all Error-Correcting-Code (ECC) Levels and masking patterns. According to a
+                    small (n=1024) random sample of QR codes I found on the internet, this means
+                    you'll be able to read about 80% of QR codes you will encounter in the real world.
+                    Reading larger or differently encoded codes isn't harder, but does require
+                    significantly more memorization and effort.
+                </p>
+                
+                <br>
+                <h2>What you need</h2>
+                <ul>
+                    <li>
+                        <b style="color: green">A QR code you want to read.</b> You will find out if your code qualifies
+                        or if you need to find another one at the bottom of this page. Note that this tutorial is about
+                        <a href="https://en.wikipedia.org/wiki/QR_code">QR codes</a>, not
+                        <a href="https://en.wikipedia.org/wiki/Aztec_Code">Aztec</a>
+                        or
+                        <a href="https://en.wikipedia.org/wiki/Universal_Product_Code">UPC codes</a>.
+                    </li>
+                    <li>
+                        <b style="color: green">A good amount of time.</b> Depending on size, payload and your familiarity with ASCII-encoding,
+                        it'll probably take 10-120 minutes. But don't worry, you'll get better!
+                    </li>
+                    <li>
+                        <b style="color: green">This tutorial, either digital or printed out.</b> If you decide
+                        to print it out (which I would recommend, since using a digital device really goes against the spirit),
+                        only print out the second page - this first page just explains the concept. Choose the QR version, ECC level
+                        and masking pattern before printing it out, since that page adapts to your settings.
+                        Page 3 contains infos to memorize so you don't need page 2's adaptiveness anymore.
+                    </li>
+                </ul>
+
+                <br>
+                <h2>What does your code look like?</h2>
+
+                <div class="canvas-side-layout">
+                    <canvas id="qr-ecc-mask-choice-canvas">
+                        If you see this message, your browser does not support
+                        the canvas api. Please open this page in a modern browser.
+                    </canvas>
+                    <div>
+                        <p>
+                            Click on the <span style="color: red">red</span> (ECC level) and <span style="color: blue">blue</span> (masking pattern)
+                            blocks in the preview to match the top left corner of your QR code.
+                            Currently, you have selected <b style="color: red">ECC level <output id="chosen-ecc-level">?</output></b> and
+                            <b style="color: blue">masking pattern <output id="chosen-mask">?</output></b> (the three bits are XOR'd with 101).
+                        </p>
+                        <p>
+                            QR codes come in 40 different sizes (the size of the grid the blocks are sitting on, without padding) also called <i>versions</i>.
+                            Use <code>version = (size - 17) ÷ 4</code> to calculate the version. This tutorial only helps you with versions 1-5.
+                        </p>
+
+                        <select id="qr-version-select">
+                            <option value="1">Version 1 (21 × 21)</option>
+                            <option value="2">Version 2 (25 × 25)</option>
+                            <option value="3">Version 3 (29 × 29)</option>
+                            <option value="4">Version 4 (33 × 33)</option>
+                            <option value="5">Version 5 (37 × 37)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page a4" id="worksheet-container">
+                <h2>Worksheet for reading QR <output id="version-name-output"></output></h2>
+
+                <div class="fill-canvas-layout">
+                    <canvas id="qr-fill-canvas">
+                        If you see this message, your browser does not support
+                        the canvas api. Please open this page in a modern browser.
+                    </canvas>
+                    <div>
+                        <h3 class="no-margin">&gt; Step 1.</h3>
+                        Color in the QR code modules. If a module contains only a diagonal line, color only the upper left half.
+                        Only color in modules that are connected to the <span style="color: green">green</span> line.
+                        <br><br>
+                        <h3 class="no-margin">&gt; Step 2.</h3>
+                        For each (interleaved) data block (4 consecutive bits along the green line), fill it inside the block table.
+                        Count blocks with a diagonal line as flipped (white<->black).
+
+                        <div class="hex-table">
+                            <div><div>0</div><div>0000</div></div>
+                            <div><div>1</div><div>0001</div></div>
+                            <div><div>2</div><div>0010</div></div>
+                            <div><div>3</div><div>0011</div></div>
+                            <div><div>4</div><div>0100</div></div>
+                            <div><div>5</div><div>0101</div></div>
+                            <div><div>6</div><div>0110</div></div>
+                            <div><div>7</div><div>0111</div></div>
+                            <div><div>8</div><div>1000</div></div>
+                            <div><div>9</div><div>1001</div></div>
+                            <div><div>A</div><div>1010</div></div>
+                            <div><div>B</div><div>1011</div></div>
+                            <div><div>C</div><div>1100</div></div>
+                            <div><div>D</div><div>1101</div></div>
+                            <div><div>E</div><div>1110</div></div>
+                            <div><div>F</div><div>1111</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="byte-tables"></div>
+                <br>
+                <h3 class="no-margin">&gt; Step 3.</h3>
+                <p class="no-margin">
+                    Now, decode the data.
+                    <span data-show-if="more-than-1-block">Read the data block-by-block, essentially concatenating the blocks.</span>
+                    The first digit indicates the encoding mode: <code>1</code> for numeric, <code>2</code> for alphanumeric, <code>8</code> for byte. If it's not byte, this tutorial will not work - sorry! The next two digits represent the number of characters to read.
+                    After, each two digits together form a number from 0 to 255, representing the ASCII values.
+                    It's easy to memorize: <code>31</code> (hex) is <code>'1'</code>, <code>41</code> is <code>'A'</code>,
+                    <code>61</code> is <code>'a'</code>, <code>2E</code> is <code>'.'</code>, <code>2F</code> is <code>'/'</code>, and
+                    <code>3A</code> is <code>':'</code>. These are enough to reconstruct most URLs and texts.
+                </p>
+
+                <div id="free-workspace"></div>
+            </div>
+
+            <div class="page a4">
+                <h2>You don't <i>need</i> the worksheet!</h2>
+                <p>
+                    ... coming soon ...
+                </p>
+            </div>
+        </main>
+
+        <script src="main.js"></script>
+    </body>
+</html>

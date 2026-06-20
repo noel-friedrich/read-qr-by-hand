@@ -1,0 +1,207 @@
+html {
+    width: 100%;
+    height: 100%;
+
+    --background-color: #f5f5f5;
+    --page-color: white;
+    --page-border-color: #ccc;
+    --page-max-width: min(95vh, 1200px);
+    --page-font: Arial, system-ui, sans-serif;
+    --page-text-color: black;
+
+    --page-width: min(95vw, var(--page-max-width));
+    --page-height: calc(var(--page-width) * sqrt(2));
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: var(--background-color);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+main.main-container {
+    height: 100%;
+
+    overflow-y: auto;
+    overflow-x: auto;
+    counter-reset: page;
+}
+
+main.main-container .page {
+    background-color: var(--page-color);
+    border: 1px solid var(--page-border-color);
+
+    width: var(--page-width);
+    /* box-shadow: 0 0 15px rgba(0, 0, 0, 0.15); */
+
+    font-family: var(--page-font);
+    font-size: calc(var(--page-width) * 0.02);
+    color: var(--page-text-color);
+
+    padding: 4em;
+    margin: 4em auto;
+
+    counter-increment: page;
+    position: relative;
+}
+
+
+main.main-container .page.a4 {
+    height: var(--page-height); 
+}
+
+main.main-container .page:not(.a4) {
+    padding-bottom: 8em;
+}
+
+main.main-container .page::before {
+    position: absolute;
+    content: "page " counter(page) "/3";
+    opacity: 0.5;
+    bottom: 2em;
+    right: 2em;
+}
+
+.page :first-child {
+    margin-top: 0;
+}
+
+.page ul, .page ol {
+    padding-inline-start: 3em;
+}
+
+.page ul li, .page ol li {
+    margin: 1em 0;
+}
+
+.page p, .page li {
+    line-height: 1.3em;
+    text-align: left;
+}
+
+.page a {
+    color: var(--page-text-color);
+}
+
+#qr-ecc-mask-choice-canvas {
+    width: 12.2em;
+    height: 13.725em;
+}
+
+.page .canvas-side-layout {
+    display: grid;
+    gap: 2em;
+    grid-template-columns: auto 1fr;
+}
+
+.page select {
+    font-size: 1em;
+    width: 100%;
+}
+
+#qr-fill-canvas {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 1px solid black;
+}
+
+#byte-tables {
+    margin-top: 1em;
+}
+
+.byte-table-label {
+    font-size: .7em;
+}
+
+.byte-table {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    --table-border: 1px solid black;
+    row-gap: .2em;
+    margin-bottom: .5em;
+}
+
+.byte-table .byte-cell.first-column {
+    border-left: var(--table-border);
+}
+
+.byte-table .byte-cell {
+    border-right: var(--table-border);
+    border-top: var(--table-border);
+    border-bottom: var(--table-border);
+    padding: 0;
+    aspect-ratio: 1 / 1;
+}
+
+.byte-table .byte-cell > input {
+    font-size: 1em;
+    border: none;
+    font-family: monospace;
+    background: none;
+    text-align: center;
+    padding-inline: 0;
+    padding: 0;
+    padding-block: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.byte-table .byte-cell > input:focus {
+    outline: none;
+}
+
+.byte-table .byte-cell:has(:focus) {
+    background-color: #00FF00;
+}
+
+.page .fill-canvas-layout {
+    display: grid;
+    gap: 1em;
+    grid-template-columns: 2fr 1fr;
+}
+
+.page .no-margin {
+    margin: 0;
+}
+
+.page .hex-table {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(8, 1fr);
+    margin-top: .5em;
+    font-family: monospace;
+    column-gap: 1em;
+}
+
+.page .hex-table > div {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+}
+
+.page .hex-table > div > div:nth-child(2) {
+    text-align: center;
+}
+
+.page .hex-table > div > div:first-child {
+    position: relative;
+}
+
+.page .hex-table > div > div:first-child::after {
+    position: absolute;
+    content: ":";
+    right: 0;
+}
+
+#free-workspace {
+    margin-top: 1em;
+}
+
+#free-workspace.visible {
+    border: 1px solid black;
+}
