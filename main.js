@@ -11,7 +11,7 @@ const elements = {
     printButton: document.getElementById("print-button")
 }
 
-const PRINT_SCALE = 2
+const PRINT_RESOLUTION = 1000
 
 const fillContext = elements.fillCanvas.getContext("2d")
 const url = new URL(window.location)
@@ -242,11 +242,9 @@ class QrCode {
         maxReadPathLength=null,
         printMode=false
     }={}) {
-        const scalingFactor = printMode ? PRINT_SCALE : 1.0
-
         context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-        context.canvas.width = context.canvas.clientWidth * scalingFactor
-        context.canvas.height = context.canvas.clientHeight * scalingFactor
+        context.canvas.width = printMode ? PRINT_RESOLUTION : context.canvas.clientWidth
+        context.canvas.height = printMode ? PRINT_RESOLUTION : context.canvas.clientHeight
 
         const cellWidth = context.canvas.width / this.size.x
         const cellHeight = context.canvas.height / this.size.y
