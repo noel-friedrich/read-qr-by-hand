@@ -99,9 +99,20 @@ main.main-container .page::before {
     grid-template-columns: auto 1fr;
 }
 
+.page .svg-side-layout > *,
+.page .fill-svg-layout > * {
+    min-width: 0;
+}
+
 .page select {
     font-size: 1em;
     width: 100%;
+}
+
+.page select:focus-visible,
+#print-button:focus-visible {
+    outline: 2px solid black;
+    outline-offset: 2px;
 }
 
 #qr-fill-svg {
@@ -120,10 +131,12 @@ main.main-container .page::before {
 
 .byte-table {
     display: grid;
-    grid-template-columns: repeat(24, 1fr);
+    grid-template-columns: repeat(24, minmax(0, 1fr));
     --table-border: 1px solid black;
     row-gap: .2em;
     margin-bottom: .5em;
+    width: 100%;
+    min-width: 0;
 }
 
 .byte-table .byte-cell.first-column {
@@ -136,6 +149,7 @@ main.main-container .page::before {
     border-bottom: var(--table-border);
     padding: 0;
     aspect-ratio: 1 / 1;
+    min-width: 0;
 }
 
 .byte-table .byte-cell > input {
@@ -148,14 +162,16 @@ main.main-container .page::before {
     padding: 0;
     padding-block: 0;
     width: 100%;
+    min-width: 0;
     height: 100%;
 }
 
-.byte-table .byte-cell > input:focus {
-    outline: none;
+.byte-table .byte-cell > input:focus-visible {
+    outline: 2px solid black;
+    outline-offset: -2px;
 }
 
-.byte-table .byte-cell:has(:focus) {
+.byte-table .byte-cell:focus-within {
     background-color: #00FF00;
 }
 
