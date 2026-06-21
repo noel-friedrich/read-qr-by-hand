@@ -45,7 +45,7 @@ function loadQRParameters() {
     const params = {
         eccLevel: loadParam(ECC_LEVEL_PARAM, ["L", "M", "Q", "H"], "L"),
         mask: parseInt(loadParam(MASK_PARAM, ["0", "1", "2", "3", "4", "5", "6", "7"], "4")),
-        version: parseInt(loadParam(VERSION_PARAM, ["1", "2", "3", "4", "5"], "3")),
+        version: parseInt(loadParam(VERSION_PARAM, ["1", "2", "3", "4", "5"], "1")),
     }
 
     elements.versionSelect.value = params.version
