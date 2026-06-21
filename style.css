@@ -37,7 +37,7 @@ main.main-container .page {
     border: .05em solid var(--page-border-color);
 
     width: var(--page-width);
-    /* box-shadow: 0 0 15px rgba(0, 0, 0, 0.15); */
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
 
     font-family: var(--page-font);
     font-size: calc(var(--page-width) * 0.02);
@@ -55,13 +55,9 @@ main.main-container .page.a4 {
     height: var(--page-height); 
 }
 
-main.main-container .page:not(.a4) {
-    padding-bottom: 8em;
-}
-
 main.main-container .page::before {
     position: absolute;
-    content: "page " counter(page) "/3";
+    content: "page " counter(page) "/4";
     opacity: 0.5;
     bottom: 2em;
     right: 2em;
@@ -223,6 +219,10 @@ main.main-container .page::before {
     cursor: pointer;
 }
 
+#print-button:hover {
+    box-shadow: 0 0 .3em rgba(0, 0, 0, 0.3);
+}
+
 .page table {
     margin-top: .5em;
     border-collapse: collapse;
@@ -246,6 +246,25 @@ main.main-container .page::before {
 
 .page table td.code {
     font-size: .8em;
+}
+
+.page table.td-align-center td {
+    text-align: center;
+}
+
+.page ol.starts-at-0 {
+    counter-reset: item -1;
+    padding-inline-start: 4em;
+}
+
+.page ol.starts-at-0 > li {
+    counter-increment: item;
+}
+
+.page ol.starts-at-0 > li::marker {
+    content: "(Step " counter(item) ") ";
+    font-weight: bold;
+    color: blue;
 }
 
 @page {
