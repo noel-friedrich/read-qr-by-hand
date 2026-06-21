@@ -639,9 +639,9 @@ function resetByteTable() {
         label.classList.add("byte-table-label")
 
         if (numBlocks > 1) {
-            label.textContent = `Data block ${blockSizeIndex + 1} (${blockSize} digits)`
+            label.textContent = `Data block ${blockSizeIndex + 1} (${blockSize} digits, ${Math.round(blockSize / 2)} bytes)`
         } else {
-            label.textContent = `Data block (${blockSize} digits)`
+            label.textContent = `Data block (${blockSize} digits, ${Math.round(blockSize / 2)} bytes)`
         }
 
         elements.byteTablesContainer.appendChild(label)
