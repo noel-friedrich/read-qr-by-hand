@@ -245,9 +245,6 @@ class QrCode {
 
         const svgNamespace = "http://www.w3.org/2000/svg"
         const highlightOverlay = "rgba(0, 255, 0, 0.5)"
-        const rect = svg.getBoundingClientRect()
-        const renderedWidth = rect.width || this.size.x
-        const strokeWidth = this.size.x / renderedWidth
 
         function createSvgElement(tagName, attributes) {
             const element = document.createElementNS(svgNamespace, tagName)
@@ -287,7 +284,8 @@ class QrCode {
                         x2: x + 1,
                         y2: y,
                         stroke: "black",
-                        "stroke-width": strokeWidth
+                        "stroke-width": 1,
+                        "vector-effect": "non-scaling-stroke"
                     }))
                 } else {
                     svg.appendChild(createSvgElement("rect", {
@@ -346,7 +344,8 @@ class QrCode {
                     x2: x,
                     y2: this.size.y,
                     stroke: "black",
-                    "stroke-width": strokeWidth
+                    "stroke-width": 1,
+                    "vector-effect": "non-scaling-stroke"
                 }))
             }
             
@@ -357,7 +356,8 @@ class QrCode {
                     x2: this.size.x,
                     y2: y,
                     stroke: "black",
-                    "stroke-width": strokeWidth
+                    "stroke-width": 1,
+                    "vector-effect": "non-scaling-stroke"
                 }))
             }
         }
@@ -374,7 +374,8 @@ class QrCode {
                 d: commands.join(" "),
                 fill: "none",
                 stroke: "green",
-                "stroke-width": strokeWidth * 2
+                "stroke-width": 2,
+                "vector-effect": "non-scaling-stroke"
             }))
         }
     }
