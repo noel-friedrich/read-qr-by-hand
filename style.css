@@ -109,12 +109,6 @@ main.main-container .page::before {
     width: 100%;
 }
 
-.page select:focus-visible,
-#print-button:focus-visible {
-    outline: 2px solid black;
-    outline-offset: 2px;
-}
-
 #qr-fill-svg {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -164,11 +158,6 @@ main.main-container .page::before {
     width: 100%;
     min-width: 0;
     height: 100%;
-}
-
-.byte-table .byte-cell > input:focus-visible {
-    outline: 2px solid black;
-    outline-offset: -2px;
 }
 
 .byte-table .byte-cell:focus-within {
