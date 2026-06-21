@@ -664,10 +664,14 @@ function resetByteTable() {
                 cellElement.classList.add("first-column")
             }
 
-            let absoluteBlockIndex = i * numBlocks + blockSizeIndex
-            if (absoluteBlockIndex >= shortLength * 2 * numBlocks) {
-                const overlap = absoluteBlockIndex - shortLength * 2 * numBlocks + 1
-                absoluteBlockIndex -= shortCount * Math.ceil(overlap / numBlocks)
+            const byteIndex = Math.floor(i / 2)
+            const nibbleIndex = i % 2
+
+            let absoluteBlockIndex = null
+            if (byteIndex < shortLength) {
+                absoluteBlockIndex = (byteIndex * numBlocks + blockSizeIndex) * 2 + nibbleIndex
+            } else {
+                absoluteBlockIndex = (shortLength * numBlocks + (blockSizeIndex - shortCount)) * 2 + nibbleIndex
             }
 
             input.addEventListener("input", () => {
