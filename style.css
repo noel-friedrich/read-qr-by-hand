@@ -9,8 +9,14 @@ html {
     --page-font: Arial, system-ui, sans-serif;
     --page-text-color: black;
 
+    /* old buggy sizes units
     --page-width: min(95vw, var(--page-max-width));
     --page-height: calc(var(--page-width) * sqrt(2));
+    */
+
+    /* ha-ha how many sheets of A10 fit into one .page? */
+    --page-width: 1000px;
+    --page-height: 1414px;
 }
 
 body {
