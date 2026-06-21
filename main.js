@@ -9,6 +9,7 @@ const elements = {
     freeWorkspace: document.getElementById("free-workspace"),
     worksheetContainer: document.getElementById("worksheet-container"),
     printButton: document.getElementById("print-button"),
+    printAllButton: document.getElementById("print-all-button"),
     maskingPatternTable: document.getElementById("masking-pattern-table")
 }
 
@@ -827,8 +828,17 @@ function initVersionSelect() {
 }
 
 function initPrintButton() {
-    elements.printButton.addEventListener("click", () => {
+    elements.printAllButton.addEventListener("click", () => {
         window.print()
+    })
+
+    elements.printButton.addEventListener("click", () => {
+        document.body.classList.add("print-worksheet-only")
+        window.print()
+    })
+
+    window.addEventListener("afterprint", () => {
+        document.body.classList.remove("print-worksheet-only")
     })
 }
 

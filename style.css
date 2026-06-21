@@ -17,6 +17,7 @@ html {
     /* ha-ha how many sheets of A10 fit into one .page? */
     --page-width: 1000px;
     --page-height: 1414px;
+    --page-scale: min(1, calc(100vw / var(--page-width)));
 }
 
 body {
@@ -24,6 +25,7 @@ body {
     height: 100%;
     margin: 0;
     background-color: var(--background-color);
+    overflow: hidden;
 }
 
 * {
@@ -31,11 +33,14 @@ body {
 }
 
 main.main-container {
-    height: 100%;
+    width: calc(100% / var(--page-scale));
+    height: calc(100% / var(--page-scale));
 
     overflow-y: auto;
-    overflow-x: auto;
+    overflow-x: hidden;
     counter-reset: page;
+    transform: scale(var(--page-scale));
+    transform-origin: top left;
 }
 
 main.main-container .page {
@@ -63,7 +68,7 @@ main.main-container .page.a4 {
 
 main.main-container .page::before {
     position: absolute;
-    content: "page " counter(page) "/4";
+    content: "page " counter(page) "/8";
     opacity: 0.5;
     bottom: 2em;
     right: 2em;
@@ -184,6 +189,20 @@ main.main-container .page::before {
     margin-top: .5em;
     font-family: monospace;
     column-gap: 1em;
+    font-size: .99em;
+}
+
+.page .image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+}
+
+.page .image-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 0;
 }
 
 .page .hex-table > div {
@@ -213,7 +232,7 @@ main.main-container .page::before {
     border: .05em solid black;
 }
 
-#print-button {
+.print-button {
     position: absolute;
     font-size: 1em;
     top: 4em;
@@ -225,7 +244,7 @@ main.main-container .page::before {
     cursor: pointer;
 }
 
-#print-button:hover {
+.print-button:hover {
     box-shadow: 0 0 .3em rgba(0, 0, 0, 0.3);
 }
 
@@ -273,6 +292,26 @@ main.main-container .page::before {
     color: blue;
 }
 
+.page ol.starts-at-3 {
+    counter-reset: item 2;
+    padding-inline-start: 4em;
+}
+
+.page ol.starts-at-3 > li {
+    counter-increment: item;
+}
+
+.page ol.starts-at-3 > li::marker {
+    content: "(Step " counter(item) ") ";
+    font-weight: bold;
+    color: blue;
+}
+
+.page .spacer {
+    height: 14em;
+}
+
+
 @page {
     size: A4 portrait;
     margin: 0;
@@ -283,6 +322,7 @@ main.main-container .page::before {
     html {
         --page-width: 210mm;
         --page-height: 297mm;
+        --page-scale: 1;
 
         width: var(--page-width);
         height: var(--page-height);
@@ -293,6 +333,7 @@ main.main-container .page::before {
         width: var(--page-width);
         height: var(--page-height);
         background-color: white;
+        overflow: visible;
     }
 
     * {
@@ -300,22 +341,22 @@ main.main-container .page::before {
         -webkit-print-color-adjust: exact;
     }
 
-    .page:not(:nth-child(2)) {
-        display: none;
-    }
-
     main.main-container .page {
         width: var(--page-width);
         height: var(--page-height);
         border: none;
         margin: 0;
+        box-shadow: none;
+        break-after: page;
+        page-break-after: always;
     }
 
     main.main-container {
         width: var(--page-width);
-        height: var(--page-height);
+        height: auto;
         padding: 0;
         overflow: visible;
+        transform: none;
     }
 
     main.main-container .page::before {
@@ -324,6 +365,10 @@ main.main-container .page::before {
 
     .using-invisible-ink {
         display: none !important;
+    }
+
+    body.print-worksheet-only .page:not(#worksheet-container) {
+        display: none;
     }
 
 }
