@@ -242,6 +242,7 @@ class QrCode {
         svg.setAttribute("viewBox", `0 0 ${this.size.x} ${this.size.y}`)
         svg.setAttribute("preserveAspectRatio", "none")
         svg.setAttribute("shape-rendering", "geometricPrecision")
+        svg.setAttribute("stroke-width", "0.03")
 
         const svgNamespace = "http://www.w3.org/2000/svg"
         const highlightOverlay = "rgba(0, 255, 0, 0.5)"
@@ -284,8 +285,8 @@ class QrCode {
                         x2: x + 1,
                         y2: y,
                         stroke: "black",
-                        "stroke-width": 1,
-                        "vector-effect": "non-scaling-stroke"
+                        // "stroke-width": 1,
+                        // "vector-effect": "non-scaling-stroke"
                     }))
                 } else {
                     svg.appendChild(createSvgElement("rect", {
@@ -317,13 +318,13 @@ class QrCode {
 
                 // trust me, this works! (basically prioritizes overlaycolor over highlight and else none)
                 const overlayColor = cell.overlayColor
-                    ? cell.overlayColor 
+                    ? cell.overlayColor
                     : (absoluteBlockIndex === null
                         ? null
                         : (absoluteBlockIndex === highlightedBlockIndex
                             ? highlightOverlay
                             : null))
-                
+
                 if (overlayColor) {
                     svg.appendChild(createSvgElement("rect", {
                         x,
@@ -344,11 +345,11 @@ class QrCode {
                     x2: x,
                     y2: this.size.y,
                     stroke: "black",
-                    "stroke-width": 1,
-                    "vector-effect": "non-scaling-stroke"
+                    // "stroke-width": 1,
+                    // "vector-effect": "non-scaling-stroke"
                 }))
             }
-            
+
             for (let y = 1; y < this.size.y; y++) {
                 svg.appendChild(createSvgElement("line", {
                     x1: 0,
@@ -356,8 +357,8 @@ class QrCode {
                     x2: this.size.x,
                     y2: y,
                     stroke: "black",
-                    "stroke-width": 1,
-                    "vector-effect": "non-scaling-stroke"
+                    // "stroke-width": 1,
+                    // "vector-effect": "non-scaling-stroke"
                 }))
             }
         }
@@ -374,8 +375,8 @@ class QrCode {
                 d: commands.join(" "),
                 fill: "none",
                 stroke: "green",
-                "stroke-width": 2,
-                "vector-effect": "non-scaling-stroke"
+                "stroke-width": 0.06,
+                // "vector-effect": "non-scaling-stroke"
             }))
         }
     }
@@ -440,14 +441,14 @@ class QrCode {
             cell.mutableId = null
         }
     }
-    
+
     drawValue(pos, moveDelta, binaryString, setImmutable=true) {
         for (let i = 0; i < binaryString.length; i++) {
             const currPos = {
                 x: pos.x + moveDelta.x * i,
                 y: pos.y + moveDelta.y * i
             }
-            
+
             const cell = this.getCellAt(currPos)
             cell.value = (binaryString[i] === "1")
 
@@ -628,7 +629,7 @@ function resetByteTable() {
     const columnsPerTable = 24
 
     const inputOrderMap = Array.from({length: totalFblocksLength})
-    
+
     for (let blockSizeIndex = 0; blockSizeIndex < numBlocks; blockSizeIndex++) {
         const blockSize = FblockSizes[blockSizeIndex]
         const label = document.createElement("label")
@@ -639,7 +640,7 @@ function resetByteTable() {
         } else {
             label.textContent = `Data block (${blockSize} digits)`
         }
-        
+
         elements.byteTablesContainer.appendChild(label)
 
         const byteTable = document.createElement("div")
@@ -649,17 +650,17 @@ function resetByteTable() {
         for (let i = 0; i < blockSize; i++) {
             const cellElement = document.createElement("div")
             cellElement.classList.add("byte-cell")
-    
+
             const input = document.createElement("input")
             input.setAttribute("type", "text")
-    
+
             cellElement.appendChild(input)
             byteTable.appendChild(cellElement)
 
             if (i % columnsPerTable === 0) {
                 cellElement.classList.add("first-column")
-            } 
-    
+            }
+
             input.addEventListener("input", () => {
                 let newValue = input.value.toUpperCase().slice(-1)
                 if (!allowedHexValues.includes(newValue)) {
@@ -719,7 +720,7 @@ function resetFreeWorkspace() {
     const usableHeight = worksheetHeight - paddingTop - paddingBottom
     const freeWorkspaceTop = elements.freeWorkspace.offsetTop - paddingTop
     const freeSpace = usableHeight - freeWorkspaceTop
-    
+
     if (freeSpace / usableHeight > 0.1) {
         elements.freeWorkspace.style.height = `${freeSpace}px`
         elements.freeWorkspace.classList.add ("visible")
