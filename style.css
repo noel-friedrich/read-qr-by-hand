@@ -67,7 +67,7 @@ main.main-container .page::before {
     right: 2em;
 }
 
-.page :first-child {
+.page > :first-child {
     margin-top: 0;
 }
 
@@ -221,6 +221,31 @@ main.main-container .page::before {
     background-color: #f5f5f5;
     padding: .25em .8em;
     cursor: pointer;
+}
+
+.page table {
+    margin-top: .5em;
+    border-collapse: collapse;
+    margin-bottom: .5em;
+    width: 100%;
+}
+
+.page table td {
+    padding: .5em;
+    border: .05em solid black;
+}
+
+.page table td.invis {
+    border: none;
+}
+
+.page table td.bold {
+    font-weight: bold;
+    text-align: center;
+}
+
+.page table td.code {
+    font-size: .8em;
 }
 
 @page {

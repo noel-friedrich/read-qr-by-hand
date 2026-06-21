@@ -9,8 +9,8 @@
 
     <body>
         <main class="main-container">
-            <div class="page a4">
-                <h1>How to read a QR Code by Hand</h1>
+            <div class="page">
+                <h1>How to read a QR Code by hand</h1>
                 <p>
                     <a href="https://en.wikipedia.org/wiki/QR_code">Quick Response Codes</a>
                     weren't made to be human-readable. However, you can still read them by hand;
@@ -47,7 +47,7 @@
                         to print it out (which I would recommend, since using a digital device really goes against the spirit),
                         only print out the second page - this first page just explains the concept. Choose the QR version, ECC level
                         and masking pattern before printing it out, since that page adapts to your settings.
-                        Page 3 contains infos to memorize so you don't need page 2's adaptiveness anymore.
+                        Page 3 contains infos to memorize for pros that don't want to use the worksheet.
                     </li>
                 </ul>
 
@@ -61,7 +61,8 @@
                             Click on the <span style="color: red">red</span> (ECC level) and <span style="color: blue">blue</span> (masking pattern)
                             blocks in the preview to match the top left corner of your QR code.
                             Currently, you have selected <b style="color: red">ECC level <output id="chosen-ecc-level">?</output></b> and
-                            <b style="color: blue">masking pattern <output id="chosen-mask">?</output></b> (the three bits are XOR'd with 101).
+                            <b style="color: blue">masking pattern <output id="chosen-mask">?</output></b>
+                            (the three bits are <a href="https://en.wikipedia.org/wiki/XOR_gate">XOR</a>'d with 101).
                         </p>
                         <p>
                             QR codes come in 40 different sizes (the size of the grid the blocks are sitting on, without padding) also called <i>versions</i>.
@@ -130,10 +131,165 @@
                 <div id="free-workspace"></div>
             </div>
 
-            <div class="page a4">
-                <h2>You don't <i>need</i> the worksheet!</h2>
+            <div class="page">
+                <h2>A more detailed explanation</h2>
                 <p>
-                    ... coming soon ...
+                    When a QR Code is created, the generator program/human follows a few (simplified) steps:
+                    <ol>
+                        <li>
+                            <b>They encode the data (usually text) into a bitstream (0s and 1s).</b> QR codes support a few encodings
+                            which each support a different set of characters (e.g. numeric, which only encodes digits 0-9). Most
+                            of the time (90% according to a sample I've done), they encode all their data using byte-mode, which
+                            is arguably easiest to decode and supports all latin characters, digits and most common special characters.
+                            At this point, they might split their data into multiple segments, each with its own encoding mode
+                            (e.g. byte for 10 characters, then numeric for 5 characters, and so on) for efficiency, but most (again, 90%)
+                            encode everything using one single byte-encoded segment.
+                        </li>
+                        <li>
+                            <b>They add encoding and length data to the bitstream.</b> For each segment (we assume it's the only segment for fun)
+                            the encoding mode and the number of encoded characters is added to the beginning of the bitstream
+                            (e.g. <code style="color: blue; font-weight: bold;">0100</code> <code style="color: green; font-weight: bold;">00001001</code> <code style="color: orangered; font-weight: bold;">10101101...</code>, i.e., <span style="color: blue">byte-mode</span>, <span style="color: green">9 characters</span> and <span style="color: orangered">the encoded characters</span>). For byte-mode encoding in
+                            versions 1-5, the length is always encoded in 8 bits (one byte).
+                        </li>
+                        <li>
+                            <b>They choose an ECC level.</b> QR codes pad the data-bits with error correcting bits, which may
+                            be used to mathemagically repair wrongly-read bits. The maths behind this (QR codes use <a href="https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction">Reed-Solomon</a> with GF(256))
+                            is nice, but not necessary for reading the code, assuming you can read all the bits. The calculations are
+                            theoretically entirely possible to do by hand, but would take a few hours (and importantly aren't interesting, very error-prone and not fun!). The available levels are <code>H</code> (high), <code>Q</code> (quartile), <code>M</code> (medium), and <code>L</code> (low).
+                            This level will decide how many ECC modules are added and into how many blocks the data will be split.
+                        </li>
+                        <li>
+                            <b>They choose a version (size) of QR code to fit the data.</b> Available are versions 1-40 with <code>size = version * 4 + 17</code>.
+                            The largest QR code can encode 3706 bytes. Depending on the level of ECC, up to 2956 of those are the data.
+                            The smallest QR can encode 26 bytes, of which at least 9 are data.
+                        </li>
+                        <li>
+                            <b>They split the data-bits up into blocks</b>.
+                            According to a large table of Version and ECC level, they decide how many blocks the data will be split into. For versions 1-5, the table of block sizes looks like this:
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td class="invis"></td> <td class="bold">L</td> <td class="bold">M</td> <td class="bold">Q</td> <td class="bold">H</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="bold">V1</td> <td>19</td> <td>16</td> <td>13</td> <td>9</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="bold">V2</td> <td>34</td> <td>28</td> <td>22</td> <td>16</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="bold">V3</td> <td>55</td> <td>44</td> <td>17+17</td> <td>13+13</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="bold">V4</td> <td>80</td> <td>32+32</td> <td>24+24</td> <td>9+9+9+9</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="bold">V5</td> <td>108</td> <td>43+43</td> <td>15+15+16+16</td> <td>11+11+12+12</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p>
+                                The table isn't nice to memorize, but for versions 1-5, it's managable. You might save some space
+                                in your mind palace by just memorizing the number of blocks and the total bytes, since the block-sizes are uniquely identified from that alone.
+                            </p>
+                            <p>
+                                The data is then split up into the blocks (e.g. assume V3-H: the first 9 data-bytes go into
+                                <span style="color: blue">block #1</span>, the next go into <span style="color: green">block #2</span>).
+                                Then, the blocks are interleaved to form one continous byte-stream again
+                                (e.g. assume V3-H: <code><span style="color: blue">B1[0]</span> <span style="color: green">B2[0]</span> <span style="color: blue">B1[1]</span> <span style="color: green">B2[1]</span> <span style="color: blue">B1[2]</span> <span style="color: green">B2[2]</span> ...</code>). This is done because each block has its own ECC and most damage is regional: essentially, this splits the damage across different ECC blocks, which may or not be the smartest solution, but it is the specification we need to work with.
+                            </p>
+                        </li>
+                        <li>
+                            <b>They arrange the data on the QR code layout.</b> They first draw the timing patterns (the eyes and the dotted lines),
+                            then fill the ECC level and masking pattern (spoiler!) info around the eyes (everything that is greyed out on the worksheet),
+                            and then lay the bit-data on the free space, according to the pattern (the <span style="color: green">green</span> zig-zag line on the worksheet). After, if there is still spare space, they put and end-sequence (a terminator digit: <code>0000</code>) and then
+                            fill the rest with padding bytes (<code>EC 11 EC 11 ...</code> is specified, but most readers ignore this part anyways, so you can put whatever you want here! Maybe some secret data? Spoilers!).
+                        </li>
+                        <li>
+                            <b>They lie a masking pattern above the data</b>. Finally, because we haven't had enough fun yet, we want to prevent certain
+                            patterns coming up in the final QR code. For example, we want to prevent shapes that look close to the timing patterns. Thus,
+                            the generator chooses one of eight masking patterns which is overlayed only on the data (and ECC) part. Every QR module (pixel)
+                            overlayed by the pattern is inverted (they perform an <a href="https://en.wikipedia.org/wiki/XOR_gate">XOR</a> with the data).
+                            <p>
+                                Here is a table of all masking patterns:
+                            </p>
+                            <table style="table-layout: fixed;">
+                                <tbody id="masking-pattern-table">
+                                    <tr>
+                                        <td class="bold">
+                                            Pattern 0
+                                        </td>
+
+                                        <td class="bold">
+                                            Pattern 1
+                                        </td>
+
+                                        <td class="bold">
+                                            Pattern 2
+                                        </td>
+
+                                        <td class="bold">
+                                            Pattern 3
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="code">
+                                            <code>(<span style="color: blue">x</span> + <span style="color: green">y</span>) % 2 === 0</code>
+                                        </td>
+
+                                        <td class="code">
+                                            <code><span style="color: green">y</span> % 2 === 0</code>
+                                        </td>
+
+                                        <td class="code">
+                                            <code><span style="color: blue">x</span> % 3 === 0</code>
+                                        </td>
+
+                                        <td class="code">
+                                            <code>(<span style="color: blue">x</span> + <span style="color: green">y</span>) % 3 === 0</code>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="bold">
+                                            Pattern 4
+                                        </td>
+
+                                        <td class="bold">
+                                            Pattern 5
+                                        </td>
+
+                                        <td class="bold">
+                                            Pattern 6
+                                        </td>
+
+                                        <td class="bold">
+                                            Pattern 7
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="code">
+                                            <code>(floor(<span style="color: green">y</span> / 2) + floor(<span style="color: blue">x</span> / 3)) % 2 === 0</code>
+                                        </td>
+
+                                        <td class="code">
+                                            <code>(((<span style="color: blue">x</span> * <span style="color: green">y</span>) % 2) + ((<span style="color: blue">x</span> * <span style="color: green">y</span>) % 3)) === 0</code>
+                                        </td>
+
+                                        <td class="code">
+                                            <code>((((<span style="color: blue">x</span> * <span style="color: green">y</span>) % 2) + ((<span style="color: blue">x</span> * <span style="color: green">y</span>) % 3)) % 2) === 0</code>
+                                        </td>
+
+                                        <td class="code">
+                                            <code>((((<span style="color: blue">x</span> + <span style="color: green">y</span>) % 2) + ((<span style="color: blue">x</span> * <span style="color: green">y</span>) % 3)) % 2) === 0</code>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                    </ol>
                 </p>
             </div>
         </main>

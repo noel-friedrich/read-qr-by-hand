@@ -8,7 +8,8 @@ const elements = {
     byteTablesContainer: document.getElementById("byte-tables"),
     freeWorkspace: document.getElementById("free-workspace"),
     worksheetContainer: document.getElementById("worksheet-container"),
-    printButton: document.getElementById("print-button")
+    printButton: document.getElementById("print-button"),
+    maskingPatternTable: document.getElementById("masking-pattern-table")
 }
 
 const url = new URL(window.location)
@@ -851,6 +852,45 @@ async function fillDatablockAutomatically() {
     }
 }
 
+function initMaskingPatternTable() {
+    const trs = Array.from(elements.maskingPatternTable.querySelectorAll("tr"))
+    const maskingPatterns = {
+        0: (x, y) => (x + y) % 2 === 0,
+        1: (x, y) => y % 2 === 0,
+        2: (x, y) => x % 3 === 0,
+        3: (x, y) => (x + y) % 3 === 0,
+        4: (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0,
+        5: (x, y) => (x * y % 2) + (x * y % 3) === 0,
+        6: (x, y) => ((x * y % 2) + (x * y % 3)) % 2 === 0,
+        7: (x, y) => ((x + y) % 2 + (x * y) % 3) % 2 === 0
+    }
+
+    for (let y = 0; y < 2; y++) {
+        const tr = document.createElement("tr")
+        for (let x = 0; x < 4; x++) {
+            const patternFunc = maskingPatterns[y * 4 + x]
+            const td = document.createElement("td")
+
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+            const qr = QrCode.fromSize({x: 12, y: 12}, ({x, y}) => {
+                return new QrCell({value: patternFunc(x, y)})
+            })
+
+            svg.style.minWidth = "0"
+            svg.style.display = "block"
+            svg.style.width = "100%"
+            svg.style.aspectRatio = "1 / 1"
+
+            qr.drawToSvg(svg, {drawText: false})
+            td.appendChild(svg)
+
+            tr.appendChild(td)
+        }
+
+        elements.maskingPatternTable.insertBefore(tr, trs[y * 2 + 1])
+    }
+}
+
 function main() {
     qrParameters = loadQRParameters()
     updateQrParameters()
@@ -858,6 +898,7 @@ function main() {
     initVersionSelect()
     resetFillSvg()
     initPrintButton()
+    initMaskingPatternTable()
 
     window.addEventListener("resize", redrawFillSvg)
     window.addEventListener("resize", resetFreeWorkspace)
