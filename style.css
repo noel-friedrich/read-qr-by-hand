@@ -88,12 +88,12 @@ main.main-container .page::before {
     color: var(--page-text-color);
 }
 
-#qr-ecc-mask-choice-canvas {
+#qr-ecc-mask-choice-svg {
     width: 12.2em;
     height: 13.725em;
 }
 
-.page .canvas-side-layout {
+.page .svg-side-layout {
     display: grid;
     gap: 2em;
     grid-template-columns: auto 1fr;
@@ -104,7 +104,7 @@ main.main-container .page::before {
     width: 100%;
 }
 
-#qr-fill-canvas {
+#qr-fill-svg {
     width: 100%;
     aspect-ratio: 1 / 1;
     border: 1px solid black;
@@ -159,7 +159,7 @@ main.main-container .page::before {
     background-color: #00FF00;
 }
 
-.page .fill-canvas-layout {
+.page .fill-svg-layout {
     display: grid;
     gap: 1em;
     grid-template-columns: 2fr 1fr;
@@ -219,23 +219,48 @@ main.main-container .page::before {
 }
 
 @page {
+    size: A4 portrait;
     margin: 0;
 }
 
 @media print {
+
+    html {
+        --page-width: 210mm;
+        --page-height: 297mm;
+
+        width: var(--page-width);
+        height: var(--page-height);
+        background-color: white;
+    }
+
+    body {
+        width: var(--page-width);
+        height: var(--page-height);
+        background-color: white;
+    }
+
+    * {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
 
     .page:not(:nth-child(2)) {
         display: none;
     }
 
     main.main-container .page {
+        width: var(--page-width);
+        height: var(--page-height);
         border: none;
         margin: 0;
     }
 
     main.main-container {
+        width: var(--page-width);
+        height: var(--page-height);
         padding: 0;
-        overflow: hidden;
+        overflow: visible;
     }
 
     main.main-container .page::before {
@@ -244,10 +269,6 @@ main.main-container .page::before {
 
     .using-invisible-ink {
         display: none !important;
-    }
-
-    html {
-        --page-max-width: 1000vw;
     }
 
 }

@@ -1,19 +1,16 @@
 const elements = {
-    choiceCanvas: document.getElementById("qr-ecc-mask-choice-canvas"),
+    choiceSvg: document.getElementById("qr-ecc-mask-choice-svg"),
     eccOutput: document.getElementById("chosen-ecc-level"),
     maskOutput: document.getElementById("chosen-mask"),
     versionSelect: document.getElementById("qr-version-select"),
     versionNameOutput: document.getElementById("version-name-output"),
-    fillCanvas: document.getElementById("qr-fill-canvas"),
+    fillSvg: document.getElementById("qr-fill-svg"),
     byteTablesContainer: document.getElementById("byte-tables"),
     freeWorkspace: document.getElementById("free-workspace"),
     worksheetContainer: document.getElementById("worksheet-container"),
     printButton: document.getElementById("print-button")
 }
 
-const PRINT_RESOLUTION = 1000
-
-const fillContext = elements.fillCanvas.getContext("2d")
 const url = new URL(window.location)
 
 const ECC_LEVEL_PARAM = "e"
@@ -67,7 +64,7 @@ function updateQrParameters() {
     elements.maskOutput.textContent = qrParameters.mask
     elements.versionNameOutput.textContent = `V${qrParameters.version}${qrParameters.eccLevel}${qrParameters.mask}`
 
-    resetFillCanvas()
+    resetFillSvg()
     saveQRParameters()
 }
 
@@ -234,25 +231,31 @@ class QrCode {
         return path
     }
 
-    drawToCanvas(context, {
+    drawToSvg(svg, {
         drawText=true,
         drawGridLines=true,
         drawReadPath=false,
         highlightedBlockIndex=null,
-        maxReadPathLength=null,
-        printMode=false
+        maxReadPathLength=null
     }={}) {
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-        context.canvas.width = printMode ? PRINT_RESOLUTION : context.canvas.clientWidth
-        context.canvas.height = printMode ? PRINT_RESOLUTION : context.canvas.clientHeight
+        svg.replaceChildren()
+        svg.setAttribute("viewBox", `0 0 ${this.size.x} ${this.size.y}`)
+        svg.setAttribute("preserveAspectRatio", "none")
+        svg.setAttribute("shape-rendering", "geometricPrecision")
 
-        const cellWidth = context.canvas.width / this.size.x
-        const cellHeight = context.canvas.height / this.size.y
+        const svgNamespace = "http://www.w3.org/2000/svg"
         const highlightOverlay = "rgba(0, 255, 0, 0.5)"
+        const rect = svg.getBoundingClientRect()
+        const renderedWidth = rect.width || this.size.x
+        const strokeWidth = this.size.x / renderedWidth
 
-        context.font = `${cellWidth * 0.6}px monospace`
-        context.textBaseline = "middle"
-        context.textAlign = "center"
+        function createSvgElement(tagName, attributes) {
+            const element = document.createElementNS(svgNamespace, tagName)
+            for (const [key, value] of Object.entries(attributes)) {
+                element.setAttribute(key, value)
+            }
+            return element
+        }
 
         // save where readPath goes to quickly find blockindex from coordinates later
         const readPath = this.getReadPath(maxReadPathLength)
@@ -265,38 +268,51 @@ class QrCode {
 
         for (let y = 0; y < this.size.y; y++) {
             for (let x = 0; x < this.size.x; x++) {
-                const xPos = (x / this.size.x) * context.canvas.width
-                const yPos = (y / this.size.y) * context.canvas.height
                 const cell = this.pixelData[y][x]
 
-                context.fillStyle = cell.value ? "black" : "white"
+                let fillStyle = cell.value ? "black" : "white"
                 if (cell.value === QrCellUnknownValue) {
-                    context.fillStyle = "#bbbbbb"
+                    fillStyle = "#bbbbbb"
                 }
 
                 if (cell.isStrikeThrough) {
-                    context.beginPath()
-                    context.moveTo(xPos, yPos + cellHeight)
-                    context.lineTo(xPos + cellWidth, yPos)
-                    context.lineTo(xPos, yPos)
-                    context.fill()
+                    svg.appendChild(createSvgElement("polygon", {
+                        points: `${x},${y + 1} ${x + 1},${y} ${x},${y}`,
+                        fill: fillStyle
+                    }))
 
-                    context.beginPath()
-                    context.moveTo(xPos, yPos + cellHeight)
-                    context.lineTo(xPos + cellWidth, yPos)
-                    context.strokeStyle = "black"
-                    context.lineWidth = 1
-                    context.stroke()
+                    svg.appendChild(createSvgElement("line", {
+                        x1: x,
+                        y1: y + 1,
+                        x2: x + 1,
+                        y2: y,
+                        stroke: "black",
+                        "stroke-width": strokeWidth
+                    }))
                 } else {
-                    context.fillRect(xPos, yPos, cellWidth + 1, cellHeight + 1)
+                    svg.appendChild(createSvgElement("rect", {
+                        x,
+                        y,
+                        width: 1,
+                        height: 1,
+                        fill: fillStyle
+                    }))
                 }
 
                 if (drawText) {
-                    context.fillStyle = cell.value ? "white" : "black"
                     const text = cell.value == QrCellUnknownValue ? "?" : (cell.value ? "1" : "0")
+                    const textElement = createSvgElement("text", {
+                        x: x + 0.5,
+                        y: y + 0.55,
+                        fill: cell.value ? "white" : "black",
+                        "font-family": "monospace",
+                        "font-size": 0.6,
+                        "text-anchor": "middle",
+                        "dominant-baseline": "middle"
+                    })
 
-                    // y * 0.55 instead of 0.5 just looks better
-                    context.fillText(text, xPos + cellWidth / 2, yPos + cellHeight * 0.55)
+                    textElement.textContent = text
+                    svg.appendChild(textElement)
                 }
 
                 const absoluteBlockIndex = blockIndexGrid[y][x]
@@ -311,47 +327,55 @@ class QrCode {
                             : null))
                 
                 if (overlayColor) {
-                    context.fillStyle = overlayColor
-                    context.fillRect(xPos, yPos, cellWidth + 1, cellHeight + 1)
+                    svg.appendChild(createSvgElement("rect", {
+                        x,
+                        y,
+                        width: 1,
+                        height: 1,
+                        fill: overlayColor
+                    }))
                 }
             }
         }
 
         if (drawGridLines) {
-            context.lineWidth = 1
-
             for (let x = 1; x < this.size.x; x++) {
-                context.beginPath()
-                context.moveTo(x * cellWidth, 0)
-                context.lineTo(x * cellWidth, context.canvas.height)
-                context.strokeStyle = "black"
-                context.stroke()
+                svg.appendChild(createSvgElement("line", {
+                    x1: x,
+                    y1: 0,
+                    x2: x,
+                    y2: this.size.y,
+                    stroke: "black",
+                    "stroke-width": strokeWidth
+                }))
             }
             
             for (let y = 1; y < this.size.y; y++) {
-                context.beginPath()
-                context.moveTo(0, y * cellHeight)
-                context.lineTo(context.canvas.width, y * cellHeight)
-                context.strokeStyle = "black"
-                context.stroke()
+                svg.appendChild(createSvgElement("line", {
+                    x1: 0,
+                    y1: y,
+                    x2: this.size.x,
+                    y2: y,
+                    stroke: "black",
+                    "stroke-width": strokeWidth
+                }))
             }
         }
 
         if (drawReadPath) {
-            context.beginPath()
-            context.moveTo(cellWidth * this.size.x, cellHeight * (this.size.y - 0.5))
+            const commands = [`M ${this.size.x} ${this.size.y - 0.5}`]
 
             for (let i = 1; i < readPath.length; i++) {
                 const [gridX, gridY] = readPath[i]
-                const xPos = (gridX + 0.5) * cellWidth
-                const yPos = (gridY + 0.5) * cellHeight
-
-                context.lineTo(xPos, yPos)
+                commands.push(`L ${gridX + 0.5} ${gridY + 0.5}`)
             }
 
-            context.lineWidth = 2
-            context.strokeStyle = "green"
-            context.stroke()
+            svg.appendChild(createSvgElement("path", {
+                d: commands.join(" "),
+                fill: "none",
+                stroke: "green",
+                "stroke-width": strokeWidth * 2
+            }))
         }
     }
 
@@ -361,10 +385,10 @@ class QrCode {
         ]))
     }
 
-    getCellAtEvent(event, context) {
-        const cellWidth = context.canvas.clientWidth / this.size.x
-        const cellHeight = context.canvas.clientHeight / this.size.y
-        const rect = context.canvas.getBoundingClientRect()
+    getCellAtEvent(event, svg) {
+        const rect = svg.getBoundingClientRect()
+        const cellWidth = rect.width / this.size.x
+        const cellHeight = rect.height / this.size.y
 
         const gridPos = {
             x: Math.floor((event.clientX - rect.left) / cellWidth),
@@ -515,9 +539,7 @@ class QrCode {
 
 }
 
-function initChoiceCanvas() {
-    const context = elements.choiceCanvas.getContext("2d")
-
+function initChoiceSvg() {
     const qr = QrCode.fromStringArray([
         "11111110",
         "10000010",
@@ -539,7 +561,7 @@ function initChoiceCanvas() {
     qr.drawValue({x: 2, y: 8}, {x: 1, y: 0}, maskBits, false)
 
     function redraw() {
-        qr.drawToCanvas(context, {drawGridLines: false})
+        qr.drawToSvg(elements.choiceSvg, {drawGridLines: false})
     }
 
     function updateVars() {
@@ -559,8 +581,8 @@ function initChoiceCanvas() {
 
     updateVars()
 
-    context.canvas.addEventListener("click", (event) => {
-        const cell = qr.getCellAtEvent(event, context)
+    elements.choiceSvg.addEventListener("click", (event) => {
+        const cell = qr.getCellAtEvent(event, elements.choiceSvg)
         if (cell?.isMutable) {
             cell.value = !cell.value
         }
@@ -569,16 +591,16 @@ function initChoiceCanvas() {
         redraw()
     })
 
-    context.canvas.addEventListener("mousemove", (event) => {
-        const cell = qr.getCellAtEvent(event, context)
+    elements.choiceSvg.addEventListener("mousemove", (event) => {
+        const cell = qr.getCellAtEvent(event, elements.choiceSvg)
         if (!cell) {
             return
         }
 
         if (cell.isMutable) {
-            context.canvas.style.cursor = "pointer"
+            elements.choiceSvg.style.cursor = "pointer"
         } else {
-            context.canvas.style.cursor = "initial"
+            elements.choiceSvg.style.cursor = "initial"
         }
     })
 
@@ -675,12 +697,12 @@ function resetByteTable() {
 
             input.addEventListener("focusin", () => {
                 highlightedDatablockIndex = absoluteBlockIndex
-                redrawFillCanvas()
+                redrawFillSvg()
             })
 
             input.addEventListener("focusout", () => {
                 highlightedDatablockIndex = null
-                redrawFillCanvas()
+                redrawFillSvg()
             })
         }
 
@@ -699,53 +721,52 @@ function resetFreeWorkspace() {
     
     if (freeSpace / usableHeight > 0.1) {
         elements.freeWorkspace.style.height = `${freeSpace}px`
-        elements.freeWorkspace.classList.add("visible")
+        elements.freeWorkspace.classList.add ("visible")
     } else {
         elements.freeWorkspace.classList.remove("visible")
     }
 }
 
 let fillQr = null
-function redrawFillCanvas(printMode=false) {
+function redrawFillSvg() {
     const [numBlocks, totalBlocksLength] = VersionECCBlockLayoutTable[qrParameters.version][qrParameters.eccLevel]
     const totalFblocksLength = totalBlocksLength * 2
 
-    fillQr.drawToCanvas(fillContext, {
+    fillQr.drawToSvg(elements.fillSvg, {
         drawText: false,
         drawReadPath: true,
         maxReadPathLength: totalFblocksLength * 4,
-        highlightedBlockIndex: highlightedDatablockIndex,
-        printMode
+        highlightedBlockIndex: highlightedDatablockIndex
     })
 }
 
-function resetFillCanvas() {
+function resetFillSvg() {
     if (fillQr === null) {
-        fillContext.canvas.addEventListener("click", (event) => {
-            const cell = fillQr.getCellAtEvent(event, fillContext)
+        elements.fillSvg.addEventListener("click", (event) => {
+            const cell = fillQr.getCellAtEvent(event, elements.fillSvg)
             if (cell?.isMutable) {
                 cell.value = !cell.value
             }
 
-            redrawFillCanvas()
+            redrawFillSvg()
         })
 
-        fillContext.canvas.addEventListener("mousemove", (event) => {
-            const cell = fillQr.getCellAtEvent(event, fillContext)
+        elements.fillSvg.addEventListener("mousemove", (event) => {
+            const cell = fillQr.getCellAtEvent(event, elements.fillSvg)
             if (!cell) {
                 return
             }
 
             if (cell.isMutable) {
-                fillContext.canvas.style.cursor = "pointer"
+                elements.fillSvg.style.cursor = "pointer"
             } else {
-                fillContext.canvas.style.cursor = "initial"
+                elements.fillSvg.style.cursor = "initial"
             }
         })
     }
 
     fillQr = QrCode.fromParameters(qrParameters)
-    redrawFillCanvas()
+    redrawFillSvg()
     resetByteTable()
     resetFreeWorkspace()
 }
@@ -762,21 +783,19 @@ function initVersionSelect() {
 
 function initPrintButton() {
     elements.printButton.addEventListener("click", () => {
-        redrawFillCanvas(true)
         window.print()
-        redrawFillCanvas()
     })
 }
 
 function main() {
     qrParameters = loadQRParameters()
     updateQrParameters()
-    initChoiceCanvas()
+    initChoiceSvg()
     initVersionSelect()
-    resetFillCanvas()
+    resetFillSvg()
     initPrintButton()
 
-    window.addEventListener("resize", redrawFillCanvas)
+    window.addEventListener("resize", redrawFillSvg)
     window.addEventListener("resize", resetFreeWorkspace)
 }
 

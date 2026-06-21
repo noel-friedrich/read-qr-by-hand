@@ -54,11 +54,8 @@
                 <br>
                 <h2>What does your code look like?</h2>
 
-                <div class="canvas-side-layout">
-                    <canvas id="qr-ecc-mask-choice-canvas">
-                        If you see this message, your browser does not support
-                        the canvas api. Please open this page in a modern browser.
-                    </canvas>
+                <div class="svg-side-layout">
+                    <svg id="qr-ecc-mask-choice-svg"></svg>
                     <div>
                         <p>
                             Click on the <span style="color: red">red</span> (ECC level) and <span style="color: blue">blue</span> (masking pattern)
@@ -86,11 +83,8 @@
                 <h2>Worksheet for reading QR <output id="version-name-output"></output></h2>
                 <button id="print-button" class="using-invisible-ink">Print</button>
 
-                <div class="fill-canvas-layout">
-                    <canvas id="qr-fill-canvas">
-                        If you see this message, your browser does not support
-                        the canvas api. Please open this page in a modern browser.
-                    </canvas>
+                <div class="fill-svg-layout">
+                    <svg id="qr-fill-svg"></svg>
                     <div>
                         <h3 class="no-margin">&gt; Step 1.</h3>
                         Color in the QR code modules. If a module contains only a diagonal line, color only the upper left half.
