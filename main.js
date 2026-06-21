@@ -611,6 +611,8 @@ function initChoiceSvg() {
     redraw()
 }
 
+let digitInputMap = null
+
 function resetByteTable() {
     elements.byteTablesContainer.innerHTML = ""
     const allowedHexValues = Array.from({length: 16}, (_, i) => i.toString(16).toUpperCase())
@@ -628,7 +630,7 @@ function resetByteTable() {
 
     const columnsPerTable = 24
 
-    const inputOrderMap = Array.from({length: totalFblocksLength})
+    digitInputMap = Array.from({length: totalFblocksLength})
 
     for (let blockSizeIndex = 0; blockSizeIndex < numBlocks; blockSizeIndex++) {
         const blockSize = FblockSizes[blockSizeIndex]
@@ -661,8 +663,42 @@ function resetByteTable() {
                 cellElement.classList.add("first-column")
             }
 
+            let absoluteBlockIndex = i * numBlocks + blockSizeIndex
+            if (absoluteBlockIndex >= shortLength * 2 * numBlocks) {
+                const overlap = absoluteBlockIndex - shortLength * 2 * numBlocks + 1
+                absoluteBlockIndex -= shortCount * Math.ceil(overlap / numBlocks)
+            }
+
             input.addEventListener("input", () => {
                 let newValue = input.value.toUpperCase().slice(-1)
+
+                if (newValue === "N") {
+                    // cheat mode! read the actual cell data and go get it!
+
+                    const readPath = fillQr.getReadPath(digitInputMap.length * 4)
+                    const valueBuffer = []
+
+                    for (let i = absoluteBlockIndex * 4; i < (absoluteBlockIndex + 1) * 4; i++) {
+                        const [x, y] = readPath[i]
+                        const cell = fillQr.getCellAt({x, y})
+                        let readValue = !!cell.value
+                        if (cell.isStrikeThrough) {
+                            readValue = !readValue
+                        }
+
+                        valueBuffer.push(readValue)
+                    }
+
+                    const correctDigit = parseInt(valueBuffer.map(v => v ? "1" : "0").join(""), 2).toString(16).toUpperCase()
+                    input.value = correctDigit
+
+                    if (absoluteBlockIndex < totalFblocksLength - 1) {
+                        digitInputMap[absoluteBlockIndex + 1].focus()
+                    }
+
+                    return
+                }
+
                 if (!allowedHexValues.includes(newValue)) {
                     input.value = ""
                     return
@@ -670,28 +706,30 @@ function resetByteTable() {
 
                 input.value = newValue
                 if (absoluteBlockIndex < totalFblocksLength - 1) {
-                    inputOrderMap[absoluteBlockIndex + 1].focus()
+                    digitInputMap[absoluteBlockIndex + 1].focus()
                 }
             })
 
-            let absoluteBlockIndex = i * numBlocks + blockSizeIndex
-            if (absoluteBlockIndex >= shortLength * 2 * numBlocks) {
-                const overlap = absoluteBlockIndex - shortLength * 2 * numBlocks + 1
-                absoluteBlockIndex -= shortCount * Math.ceil(overlap / numBlocks)
-            }
-
-            inputOrderMap[absoluteBlockIndex] = input
+            digitInputMap[absoluteBlockIndex] = input
             input.dataset.inputOrderKey = absoluteBlockIndex
 
             input.addEventListener("keydown", event => {
                 if (event.key === "Tab") {
                     if (event.shiftKey) {
                         if (absoluteBlockIndex > 0) {
-                            inputOrderMap[absoluteBlockIndex - 1].focus()
+                            digitInputMap[absoluteBlockIndex - 1].focus()
                             event.preventDefault()
                         }
                     } else if (absoluteBlockIndex < totalFblocksLength - 1) {
-                        inputOrderMap[absoluteBlockIndex + 1].focus()
+                        digitInputMap[absoluteBlockIndex + 1].focus()
+                        event.preventDefault()
+                    }
+                }
+
+                if (event.key === "Backspace" && input.value.length == 0) {
+                    if (absoluteBlockIndex > 0) {
+                        input.value = ""
+                        digitInputMap[absoluteBlockIndex - 1].focus()
                         event.preventDefault()
                     }
                 }
@@ -787,6 +825,30 @@ function initPrintButton() {
     elements.printButton.addEventListener("click", () => {
         window.print()
     })
+}
+
+async function fillDatablockAutomatically() {
+    const readPath = fillQr.getReadPath(digitInputMap.length * 4)
+    const valueBuffer = []
+
+    for (let i = 0; i < readPath.length; i++) {
+        const [x, y] = readPath[i]
+        const cell = fillQr.getCellAt({x, y})
+        let readValue = !!cell.value
+        if (cell.isStrikeThrough) {
+            readValue = !readValue
+        }
+
+        valueBuffer.push(readValue)
+
+        if (valueBuffer.length === 4) {
+            const digit = parseInt(valueBuffer.map(v => v ? "1" : "0").join(""), 2).toString(16).toUpperCase()
+            digitInputMap[Math.floor(i / 4)].value = digit
+            valueBuffer.splice(0, 4)
+            
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+    }
 }
 
 function main() {
