@@ -27,12 +27,29 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
-    background-color: var(--background-color);
+    /*background-color: var(--background-color);*/
     overflow: hidden;
 }
 
 * {
     box-sizing: border-box;
+}
+
+.background-container {
+    position: fixed;
+    z-index: -1;
+
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    opacity: 0.1;
+}
+
+.background-container .background-svg {
+    width: 100%;
+    height: 100%;
 }
 
 main.main-container {
@@ -72,7 +89,7 @@ main.main-container .page {
 
 
 main.main-container .page.a4 {
-    height: var(--page-height); 
+    height: var(--page-height);
 }
 
 main.main-container .page::before {

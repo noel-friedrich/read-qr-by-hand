@@ -10,7 +10,8 @@ const elements = {
     worksheetContainer: document.getElementById("worksheet-container"),
     printButton: document.getElementById("print-button"),
     printAllButton: document.getElementById("print-all-button"),
-    maskingPatternTable: document.getElementById("masking-pattern-table")
+    maskingPatternTable: document.getElementById("masking-pattern-table"),
+    backgroundSvg: document.getElementById("background-svg")
 }
 
 const url = new URL(window.location)
@@ -18,6 +19,17 @@ const url = new URL(window.location)
 const ECC_LEVEL_PARAM = "e"
 const MASK_PARAM = "m"
 const VERSION_PARAM = "v"
+
+const MaskingPatternFuncs = {
+    0: (x, y) => (x + y) % 2 === 0,
+    1: (x, y) => y % 2 === 0,
+    2: (x, y) => x % 3 === 0,
+    3: (x, y) => (x + y) % 3 === 0,
+    4: (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0,
+    5: (x, y) => (x * y % 2) + (x * y % 3) === 0,
+    6: (x, y) => ((x * y % 2) + (x * y % 3)) % 2 === 0,
+    7: (x, y) => ((x + y) % 2 + (x * y) % 3) % 2 === 0
+}
 
 let highlightedDatablockIndex = null
 let isPrintingWorksheetOnly = false
@@ -539,16 +551,7 @@ class QrCode {
         qr.drawValue({x: 8, y: qr.size.y - 8}, {x: 0, y: 0}, "1")
 
         // apply masking pattern as overlayColor
-        const maskingFunc = {
-            0: (x, y) => (x + y) % 2 === 0,
-            1: (x, y) => y % 2 === 0,
-            2: (x, y) => x % 3 === 0,
-            3: (x, y) => (x + y) % 3 === 0,
-            4: (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0,
-            5: (x, y) => (x * y % 2) + (x * y % 3) === 0,
-            6: (x, y) => ((x * y % 2) + (x * y % 3)) % 2 === 0,
-            7: (x, y) => ((x + y) % 2 + (x * y) % 3) % 2 === 0
-        }[mask]
+        const maskingFunc = MaskingPatternFuncs[mask]
 
         qr.forEachCell((cell, x, y) => {
             if (cell.isMutable) {
@@ -898,21 +901,11 @@ async function fillDatablockAutomatically() {
 
 function initMaskingPatternTable() {
     const trs = Array.from(elements.maskingPatternTable.querySelectorAll("tr"))
-    const maskingPatterns = {
-        0: (x, y) => (x + y) % 2 === 0,
-        1: (x, y) => y % 2 === 0,
-        2: (x, y) => x % 3 === 0,
-        3: (x, y) => (x + y) % 3 === 0,
-        4: (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0,
-        5: (x, y) => (x * y % 2) + (x * y % 3) === 0,
-        6: (x, y) => ((x * y % 2) + (x * y % 3)) % 2 === 0,
-        7: (x, y) => ((x + y) % 2 + (x * y) % 3) % 2 === 0
-    }
 
     for (let y = 0; y < 2; y++) {
         const tr = document.createElement("tr")
         for (let x = 0; x < 4; x++) {
-            const patternFunc = maskingPatterns[y * 4 + x]
+            const patternFunc = MaskingPatternFuncs[y * 4 + x]
             const td = document.createElement("td")
 
             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
@@ -935,6 +928,33 @@ function initMaskingPatternTable() {
     }
 }
 
+let randomBackgroundPatternIndex = null
+function initBackground() {
+    // make for a consistent pattern across many (resize-triggered) calls
+    if (randomBackgroundPatternIndex === null) {
+        randomBackgroundPatternIndex = Math.floor(Math.random() * 8)
+    }
+
+    const randomPattern = MaskingPatternFuncs[randomBackgroundPatternIndex]
+
+    const qrSize = {
+        x: Math.round(window.innerWidth / 40),
+        y: Math.round(window.innerHeight / 40),
+    }
+
+    const qr = QrCode.fromSize(qrSize, ({ x, y }) => {
+        if (randomPattern(x, y)) {
+            const [xPercent, yPercent] = [Math.random(), Math.random()]
+            const overlayColor = `hsla(${xPercent * 360}, 100%, ${yPercent * 30 + 40}%, 1)`
+            return new QrCell({ value: true, overlayColor })
+        } else {
+            return new QrCell({ value: false})
+        }
+    })
+
+    qr.drawToSvg(elements.backgroundSvg, {drawText: false, drawGridLines: false})
+}
+
 function main() {
     initPageSlots()
     updatePageScale()
@@ -945,7 +965,9 @@ function main() {
     resetFillSvg()
     initPrintButtons()
     initMaskingPatternTable()
+    initBackground()
 
+    window.addEventListener("resize", initBackground)
     window.addEventListener("resize", redrawFillSvg)
     window.addEventListener("resize", resetFreeWorkspace)
     window.addEventListener("resize", updatePageScale)
