@@ -331,7 +331,7 @@ main.main-container .page::before {
     html {
         --page-width: 210mm;
         --page-height: 297mm;
-        --page-scale: 1;
+        --page-scale: 1 !important;
 
         width: var(--page-width);
         height: var(--page-height);
@@ -356,6 +356,7 @@ main.main-container .page::before {
         border: none;
         margin: 0;
         box-shadow: none;
+        transform: none !important;
         break-after: page;
         page-break-after: always;
     }
@@ -369,7 +370,7 @@ main.main-container .page::before {
     }
 
     main.main-container .page-slot {
-        display: contents;
+        display: contents !important;
     }
 
     main.main-container .page::before {
