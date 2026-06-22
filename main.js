@@ -21,6 +21,15 @@ const VERSION_PARAM = "v"
 
 let highlightedDatablockIndex = null
 
+function updatePageScale() {
+    const pageWidth = 1000
+    const scale = Math.min(1, window.innerWidth / pageWidth)
+
+    document.documentElement.style.setProperty("--page-scale", scale)
+    document.documentElement.style.setProperty("--main-width", `${window.innerWidth / scale}px`)
+    document.documentElement.style.setProperty("--main-height", `${window.innerHeight / scale}px`)
+}
+
 const VersionECCBlockLayoutTable = {
     1: {"L": [1,  19], "M": [1, 16], "Q": [1, 13], "H": [1,  9]},
     2: {"L": [1,  34], "M": [1, 28], "Q": [1, 22], "H": [1, 16]},
@@ -906,6 +915,7 @@ function initMaskingPatternTable() {
 }
 
 function main() {
+    updatePageScale()
     qrParameters = loadQRParameters()
     updateQrParameters()
     initChoiceSvg()
@@ -916,6 +926,8 @@ function main() {
 
     window.addEventListener("resize", redrawFillSvg)
     window.addEventListener("resize", resetFreeWorkspace)
+    window.addEventListener("resize", updatePageScale)
+    window.addEventListener("orientationchange", updatePageScale)
 }
 
 window.addEventListener("load", main)

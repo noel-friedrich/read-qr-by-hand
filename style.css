@@ -17,7 +17,9 @@ html {
     /* ha-ha how many sheets of A10 fit into one .page? */
     --page-width: 1000px;
     --page-height: 1414px;
-    --page-scale: min(1, calc(100vw / var(--page-width)));
+    --page-scale: 1;
+    --main-width: 100%;
+    --main-height: 100%;
 }
 
 body {
@@ -33,8 +35,8 @@ body {
 }
 
 main.main-container {
-    width: calc(100% / var(--page-scale));
-    height: calc(100% / var(--page-scale));
+    width: var(--main-width);
+    height: var(--main-height);
 
     overflow-y: auto;
     overflow-x: hidden;
