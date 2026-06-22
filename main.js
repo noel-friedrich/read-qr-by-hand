@@ -20,6 +20,7 @@ const MASK_PARAM = "m"
 const VERSION_PARAM = "v"
 
 let highlightedDatablockIndex = null
+let isPrintingWorksheetOnly = false
 
 function initPageSlots() {
     document.querySelectorAll("main.main-container > .page").forEach(page => {
@@ -86,13 +87,17 @@ function saveQRParameters() {
 function updateQrParameters() {
     elements.eccOutput.textContent = qrParameters.eccLevel
     elements.maskOutput.textContent = qrParameters.mask
-    elements.versionNameOutput.textContent = `V${qrParameters.version}${qrParameters.eccLevel}${qrParameters.mask}`
+    elements.versionNameOutput.textContent = getQRName()
 
     resetFillSvg()
     saveQRParameters()
 }
 
 let qrParameters = null
+
+function getQRName() {
+    return `V${qrParameters.version}${qrParameters.eccLevel}${qrParameters.mask}`
+}
 
 const QrCellUnknownValue = "unknown"
 
@@ -779,7 +784,10 @@ function resetByteTable() {
 }
 
 function resetFreeWorkspace() {
+    elements.freeWorkspace.style.height = ""
+
     const styles = getComputedStyle(elements.worksheetContainer)
+    const fontSize = parseFloat(styles.fontSize)
     const paddingTop = parseFloat(styles.paddingTop)
     const paddingBottom = parseFloat(styles.paddingBottom)
     const worksheetHeight = elements.worksheetContainer.clientHeight
@@ -787,12 +795,17 @@ function resetFreeWorkspace() {
     const freeWorkspaceTop = elements.freeWorkspace.offsetTop - paddingTop
     const freeSpace = usableHeight - freeWorkspaceTop
 
-    if (freeSpace / usableHeight > 0.1) {
-        elements.freeWorkspace.style.height = `${freeSpace}px`
-        elements.freeWorkspace.classList.add ("visible")
+    if (fontSize > 0 && freeSpace / usableHeight > 0.1) {
+        elements.freeWorkspace.style.height = `${freeSpace / fontSize}em`
+        elements.freeWorkspace.classList.add("visible")
     } else {
         elements.freeWorkspace.classList.remove("visible")
     }
+}
+
+function updatePrintLayout() {
+    resetFreeWorkspace()
+    requestAnimationFrame(resetFreeWorkspace)
 }
 
 let fillQr = null
@@ -849,18 +862,13 @@ function initVersionSelect() {
     updateVersionValue()
 }
 
-function initPrintButton() {
+function initPrintButtons() {
     elements.printAllButton.addEventListener("click", () => {
-        window.print()
+        window.open(`pdfs/full-${getQRName()}.pdf`, "_blank").focus()
     })
 
     elements.printButton.addEventListener("click", () => {
-        document.body.classList.add("print-worksheet-only")
-        window.print()
-    })
-
-    window.addEventListener("afterprint", () => {
-        document.body.classList.remove("print-worksheet-only")
+        window.open(`pdfs/${getQRName()}.pdf`, "_blank").focus()
     })
 }
 
@@ -882,7 +890,7 @@ async function fillDatablockAutomatically() {
             const digit = parseInt(valueBuffer.map(v => v ? "1" : "0").join(""), 2).toString(16).toUpperCase()
             digitInputMap[Math.floor(i / 4)].value = digit
             valueBuffer.splice(0, 4)
-            
+
             await new Promise(resolve => setTimeout(resolve, 10))
         }
     }
@@ -935,7 +943,7 @@ function main() {
     initChoiceSvg()
     initVersionSelect()
     resetFillSvg()
-    initPrintButton()
+    initPrintButtons()
     initMaskingPatternTable()
 
     window.addEventListener("resize", redrawFillSvg)
