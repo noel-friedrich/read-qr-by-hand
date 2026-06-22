@@ -18,8 +18,9 @@ html {
     --page-width: 1000px;
     --page-height: 1414px;
     --page-scale: 1;
-    --main-width: 100%;
-    --main-height: 100%;
+    --page-slot-width: var(--page-width);
+    --page-slot-height: var(--page-height);
+    --page-slot-margin: 4em;
 }
 
 body {
@@ -35,14 +36,18 @@ body {
 }
 
 main.main-container {
-    width: var(--main-width);
-    height: var(--main-height);
+    width: 100%;
+    height: 100%;
 
     overflow-y: auto;
     overflow-x: hidden;
     counter-reset: page;
-    transform: scale(var(--page-scale));
-    transform-origin: top left;
+}
+
+main.main-container .page-slot {
+    width: var(--page-slot-width);
+    height: var(--page-slot-height);
+    margin: var(--page-slot-margin) auto;
 }
 
 main.main-container .page {
@@ -57,10 +62,12 @@ main.main-container .page {
     color: var(--page-text-color);
 
     padding: 4em;
-    margin: 4em auto;
+    margin: 0;
 
     counter-increment: page;
     position: relative;
+    transform: scale(var(--page-scale));
+    transform-origin: top left;
 }
 
 
@@ -359,6 +366,10 @@ main.main-container .page::before {
         padding: 0;
         overflow: visible;
         transform: none;
+    }
+
+    main.main-container .page-slot {
+        display: contents;
     }
 
     main.main-container .page::before {

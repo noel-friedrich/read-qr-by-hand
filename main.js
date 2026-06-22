@@ -21,13 +21,26 @@ const VERSION_PARAM = "v"
 
 let highlightedDatablockIndex = null
 
+function initPageSlots() {
+    document.querySelectorAll("main.main-container > .page").forEach(page => {
+        const pageSlot = document.createElement("div")
+        pageSlot.className = "page-slot"
+        page.before(pageSlot)
+        pageSlot.appendChild(page)
+    })
+}
+
 function updatePageScale() {
     const pageWidth = 1000
-    const scale = Math.min(1, window.innerWidth / pageWidth)
+    const pageHeight = 1414
+    const pageMargin = 80
+    const viewportWidth = window.visualViewport?.width || document.documentElement.clientWidth || window.innerWidth
+    const scale = Math.min(1, viewportWidth / pageWidth)
 
     document.documentElement.style.setProperty("--page-scale", scale)
-    document.documentElement.style.setProperty("--main-width", `${window.innerWidth / scale}px`)
-    document.documentElement.style.setProperty("--main-height", `${window.innerHeight / scale}px`)
+    document.documentElement.style.setProperty("--page-slot-width", `${pageWidth * scale}px`)
+    document.documentElement.style.setProperty("--page-slot-height", `${pageHeight * scale}px`)
+    document.documentElement.style.setProperty("--page-slot-margin", `${pageMargin * scale}px`)
 }
 
 const VersionECCBlockLayoutTable = {
@@ -915,6 +928,7 @@ function initMaskingPatternTable() {
 }
 
 function main() {
+    initPageSlots()
     updatePageScale()
     qrParameters = loadQRParameters()
     updateQrParameters()
@@ -928,6 +942,7 @@ function main() {
     window.addEventListener("resize", resetFreeWorkspace)
     window.addEventListener("resize", updatePageScale)
     window.addEventListener("orientationchange", updatePageScale)
+    window.visualViewport?.addEventListener("resize", updatePageScale)
 }
 
 window.addEventListener("load", main)
