@@ -970,9 +970,9 @@ function main() {
     window.addEventListener("resize", initBackground)
     window.addEventListener("resize", redrawFillSvg)
     window.addEventListener("resize", resetFreeWorkspace)
-    window.addEventListener("resize", updatePageScale)
-    window.addEventListener("orientationchange", updatePageScale)
-    window.visualViewport?.addEventListener("resize", updatePageScale)
+    // window.addEventListener("resize", updatePageScale)
+    // window.addEventListener("orientationchange", updatePageScale)
+    // window.visualViewport?.addEventListener("resize", updatePageScale)
 }
 
 window.addEventListener("load", main)
