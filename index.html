@@ -367,7 +367,7 @@
                         - which I have tried and found more tedious and confusing than this way.
                     </li>
                     <li>
-                        Now, we want to read the data as hex-digits into the prepared blocks below the QR code. While doing this,
+                        Now, we want to read the data along the green line as hex-digits into the prepared blocks below the QR code. While doing this,
                         we undo the block-interleaving byte-by-byte (each byte being two digits). First fill out the first two digits of the first block, then the first
                         two digits of the second block, until we reach the first byte of the last block, after which we come to the
                         second byte of the first block, continuing the pattern. If you're using the worksheet online, you can click on
@@ -463,7 +463,6 @@
             <svg class="background-svg" id="background-svg"></svg>
         </div>
 
-        <script src="pdflib.js"></script>
         <script src="main.js?t=9"></script>
     </body>
 </html>
