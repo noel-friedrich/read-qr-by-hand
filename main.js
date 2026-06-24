@@ -277,7 +277,8 @@ class QrCode {
         drawGridLines=true,
         drawReadPath=false,
         highlightedBlockIndex=null,
-        maxReadPathLength=null
+        maxReadPathLength=null,
+        drawBlockIndeces=[]
     }={}) {
         svg.replaceChildren()
         svg.setAttribute("viewBox", `0 0 ${this.size.x} ${this.size.y}`)
@@ -365,6 +366,21 @@ class QrCode {
                         : (absoluteBlockIndex === highlightedBlockIndex
                             ? highlightOverlay
                             : null))
+
+                if (drawBlockIndeces.includes(absoluteBlockIndex)) {
+                    const textElement = createSvgElement("text", {
+                        x: x + 0.8,
+                        y: y + 0.8,
+                        fill: cell.value ? "white" : "black",
+                        "font-family": "monospace",
+                        "font-size": 0.4,
+                        "text-anchor": "middle",
+                        "dominant-baseline": "middle"
+                    })
+
+                    textElement.textContent = (absoluteBlockIndex + 1).toString()
+                    svg.appendChild(textElement)
+                }
 
                 if (overlayColor) {
                     svg.appendChild(createSvgElement("rect", {
@@ -682,8 +698,23 @@ function resetByteTable() {
         byteTable.style.gridTemplateColumns = `repeat(${columnsPerTable}, 1fr)`
 
         for (let i = 0; i < blockSize; i++) {
+            const byteIndex = Math.floor(i / 2)
+            const nibbleIndex = i % 2
+
+            let absoluteBlockIndex = null
+            if (byteIndex < shortLength) {
+                absoluteBlockIndex = (byteIndex * numBlocks + blockSizeIndex) * 2 + nibbleIndex
+            } else {
+                absoluteBlockIndex = (shortLength * numBlocks + (blockSizeIndex - shortCount)) * 2 + nibbleIndex
+            }
+
             const cellElement = document.createElement("div")
             cellElement.classList.add("byte-cell")
+
+            if (absoluteBlockIndex < 9) {
+                cellElement.classList.add("show-blockindex")
+                cellElement.dataset.blockindex = absoluteBlockIndex + 1
+            }
 
             const input = document.createElement("input")
             input.setAttribute("type", "text")
@@ -695,14 +726,8 @@ function resetByteTable() {
                 cellElement.classList.add("first-column")
             }
 
-            const byteIndex = Math.floor(i / 2)
-            const nibbleIndex = i % 2
-
-            let absoluteBlockIndex = null
-            if (byteIndex < shortLength) {
-                absoluteBlockIndex = (byteIndex * numBlocks + blockSizeIndex) * 2 + nibbleIndex
-            } else {
-                absoluteBlockIndex = (shortLength * numBlocks + (blockSizeIndex - shortCount)) * 2 + nibbleIndex
+            if ((i + 1) % columnsPerTable === 0) {
+                cellElement.classList.add("last-column")
             }
 
             input.addEventListener("input", () => {
@@ -820,7 +845,8 @@ function redrawFillSvg() {
         drawText: false,
         drawReadPath: true,
         maxReadPathLength: totalFblocksLength * 4,
-        highlightedBlockIndex: highlightedDatablockIndex
+        highlightedBlockIndex: highlightedDatablockIndex,
+        drawBlockIndeces: Array.from({length: 9}, (_, i) => i)
     })
 }
 

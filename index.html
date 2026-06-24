@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Read a QR by hand</title>
-        <link rel="stylesheet" href="style.css?t=9">
+        <link rel="stylesheet" href="style.css?t=10">
     </head>
 
     <body>
@@ -85,7 +85,7 @@
                 </div>
             </div>
 
-            <div class="page a4" id="worksheet-container">
+            <div class="page a4 worksheet" id="worksheet-container">
                 <h2>Worksheet for reading QR <output id="version-name-output"></output></h2>
                 <button id="print-button" class="print-button using-invisible-ink">Print</button>
 
@@ -93,12 +93,16 @@
                     <svg id="qr-fill-svg"></svg>
                     <div>
                         <h3 class="no-margin">&gt; Step 1.</h3>
-                        Color in the QR code modules. If a module contains only a diagonal line, color only the upper left half.
-                        Only color in modules that are connected to the <span style="color: green">green</span> line.
+                        <p>
+                            Color in the QR code modules. If a module contains only a diagonal line, color only the upper left half.
+                            Only color in modules that lie on the <span style="color: green">green</span> line.
+                        </p>
                         <br><br>
                         <h3 class="no-margin">&gt; Step 2.</h3>
-                        For each (interleaved) data digit (4 consecutive bits along the green line), fill it inside the block table.
-                        Count squares with a diagonal line as flipped (white<->black).
+                        <p>
+                            For each (interleaved) data digit (4 consecutive bits along the green line), fill it inside the block table.
+                            Interpret squares with a diagonal line as inverted.
+                        </p>
 
                         <div class="hex-table">
                             <div><div>0</div><div>0000</div></div>
@@ -130,7 +134,7 @@
                     After, each two digits together form a number from 0 to 255, representing the ASCII values.
                     It's easy to memorize: <code>31</code> (hex) is <code>'1'</code>, <code>41</code> is <code>'A'</code>,
                     <code>61</code> is <code>'a'</code>, <code>2E</code> is <code>'.'</code>, <code>2F</code> is <code>'/'</code>, and
-                    <code>3A</code> is <code>':'</code>. These are enough to reconstruct most URLs and texts.
+                    <code>3A</code> is <code>':'</code> (full table on page 7).
                 </p>
 
                 <div id="free-workspace"></div>
@@ -463,6 +467,6 @@
             <svg class="background-svg" id="background-svg"></svg>
         </div>
 
-        <script src="main.js?t=9"></script>
+        <script src="main.js?t=10"></script>
     </body>
 </html>
