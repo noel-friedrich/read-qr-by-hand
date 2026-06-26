@@ -371,7 +371,7 @@ class QrCode {
                     const textElement = createSvgElement("text", {
                         x: x + 0.8,
                         y: y + 0.8,
-                        fill: cell.value ? "white" : "black",
+                        fill: (cell.value && !cell.isStrikeThrough) ? "white" : "black",
                         "font-family": "monospace",
                         "font-size": 0.4,
                         "text-anchor": "middle",
