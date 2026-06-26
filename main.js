@@ -577,7 +577,7 @@ class QrCode {
                 }
             } else {
                 if (cell.value) {
-                    cell.overlayColor = "rgba(255, 255, 255, 0.6)"
+                    cell.overlayColor = "rgba(255, 255, 255, 0.4)"
                 } else {
                     cell.overlayColor = "rgba(0, 0, 0, 0.1)"
                 }
