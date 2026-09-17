@@ -970,11 +970,9 @@ function initBackground() {
 
     const qr = QrCode.fromSize(qrSize, ({ x, y }) => {
         if (randomPattern(x, y)) {
-            const [xPercent, yPercent] = [Math.random(), Math.random()]
-            const overlayColor = `hsla(${xPercent * 360}, 100%, ${yPercent * 30 + 40}%, 1)`
-            return new QrCell({ value: true, overlayColor })
+            return new QrCell({ value: true, overlayColor: "#f5f5f5" })
         } else {
-            return new QrCell({ value: false})
+            return new QrCell({ value: false, overlayColor: "white" })
         }
     })
 
